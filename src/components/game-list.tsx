@@ -4,6 +4,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   formatDuration,
   type GameStatus,
+  type ImportedSession,
+  type PlaytimeCategory,
+  type SessionSource,
   type TrackedGame,
 } from "@/types/game";
 import { GameCard } from "./game-card";
@@ -13,11 +16,12 @@ interface GameListProps {
   activeSession: { gameId: string; startedAt: number } | null;
   activeElapsedSeconds: number;
   onStatusChange: (id: string, status: GameStatus) => void;
-  onStart: (id: string) => void;
+  onStart: (id: string, category?: PlaytimeCategory) => void;
   onStop: () => void;
   onRemove: (id: string) => void;
   onDeleteSession: (gameId: string, sessionId: string) => void;
-  onAddManualTime: (gameId: string, seconds: number, note?: string) => void;
+  onAddManualTime: (gameId: string, seconds: number, note?: string, category?: PlaytimeCategory) => void;
+  onImportSessions: (gameId: string, sessions: ImportedSession[], source: SessionSource) => void;
 }
 
 const tabs: { value: GameStatus | "all"; label: string }[] = [
@@ -66,6 +70,7 @@ export function GameList({
   onRemove,
   onDeleteSession,
   onAddManualTime,
+  onImportSessions,
 }: GameListProps) {
   const [filter, setFilter] = useStateWithLocalStorage<GameStatus | "all">(
     "game-tracker-filter",
@@ -124,14 +129,17 @@ export function GameList({
                 activeSession?.gameId === game.id ? activeElapsedSeconds : 0
               }
               onStatusChange={(status) => onStatusChange(game.id, status)}
-              onStart={() => onStart(game.id)}
+              onStart={(category) => onStart(game.id, category)}
               onStop={onStop}
               onRemove={() => onRemove(game.id)}
               onDeleteSession={(sessionId) =>
                 onDeleteSession(game.id, sessionId)
               }
-              onAddManualTime={(seconds, note) =>
-                onAddManualTime(game.id, seconds, note)
+              onAddManualTime={(seconds, note, category) =>
+                onAddManualTime(game.id, seconds, note, category)
+              }
+              onImportSessions={(sessions, source) =>
+                onImportSessions(game.id, sessions, source)
               }
             />
           ))}

@@ -16,6 +16,7 @@ export function GameDashboard() {
     startSession,
     stopSession,
     addManualSession,
+    importSessions,
     deleteSession,
   } = useTrackedGames();
 
@@ -59,6 +60,7 @@ export function GameDashboard() {
             onRemove={removeGame}
             onDeleteSession={deleteSession}
             onAddManualTime={addManualSession}
+            onImportSessions={importSessions}
           />
         </section>
       </main>
