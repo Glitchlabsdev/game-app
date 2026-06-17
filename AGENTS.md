@@ -14,3 +14,4 @@ Before starting any work on a feature or bug fix:
    - Use kebab-case, keep it short and descriptive.
 2. **Switch to that branch** before making any changes.
 3. Never commit directly to `main` or the default branch.
+
