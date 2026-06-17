@@ -19,13 +19,18 @@ export async function GET(request: Request) {
       `fields name, cover.image_id, first_release_date, summary, genres.name, platforms.name; ` +
         `search "${query.replace(/"/g, '\\"')}"; ` +
         `where version_parent = null; ` +
-        `sort first_release_date desc; ` +
         `limit ${PAGE_SIZE + 1}; ` +
         `offset ${offset};`,
     )) as IGDBGame[];
 
-    const hasMore = results.length > PAGE_SIZE;
-    const games = results.slice(0, PAGE_SIZE);
+    const sorted = [...results].sort((a, b) => {
+      if (!a.first_release_date) return 1;
+      if (!b.first_release_date) return -1;
+      return b.first_release_date - a.first_release_date;
+    });
+
+    const hasMore = sorted.length > PAGE_SIZE;
+    const games = sorted.slice(0, PAGE_SIZE);
 
     return Response.json({ games, hasMore });
   } catch (error) {
