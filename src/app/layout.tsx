@@ -29,6 +29,7 @@ export default function RootLayout({
     <html
       lang="en"
       className={cn(
+        "dark",
         "h-full",
         "antialiased",
         geistSans.variable,
@@ -36,6 +37,7 @@ export default function RootLayout({
         "font-sans",
         inter.variable,
       )}
+      style={{ colorScheme: "dark" }}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
