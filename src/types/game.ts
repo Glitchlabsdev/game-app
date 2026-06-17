@@ -1,10 +1,49 @@
 export type GameStatus = "playing" | "completed" | "backlog" | "dropped";
+export type PlaytimeCategory =
+  | "main_story"
+  | "main_extras"
+  | "completionist"
+  | "speedrun"
+  | "other";
+export type SessionSource =
+  | "timer"
+  | "manual"
+  | "steam"
+  | "playstation"
+  | "xbox"
+  | "gog";
+
+export const CATEGORY_LABELS: Record<PlaytimeCategory, string> = {
+  main_story: "Main Story",
+  main_extras: "Main + Extras",
+  completionist: "Completionist",
+  speedrun: "Speedrun",
+  other: "Other",
+};
+
+export const SOURCE_LABELS: Record<SessionSource, string> = {
+  timer: "Timer",
+  manual: "Manual",
+  steam: "Steam",
+  playstation: "PlayStation",
+  xbox: "Xbox",
+  gog: "GOG",
+};
 
 export interface GameSession {
   id: string;
   startedAt: number;
   endedAt?: number;
   durationSeconds: number;
+  note?: string;
+  category?: PlaytimeCategory;
+  source?: SessionSource;
+}
+
+export interface ImportedSession {
+  durationMinutes: number;
+  category?: PlaytimeCategory;
+  date?: string;
   note?: string;
 }
 

@@ -1,7 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { GameSession, GameStatus, TrackedGame } from "@/types/game";
+import type {
+  GameSession,
+  GameStatus,
+  ImportedSession,
+  PlaytimeCategory,
+  SessionSource,
+  TrackedGame,
+} from "@/types/game";
 
 const STORAGE_KEY = "game-tracker-data-v1";
 
@@ -29,6 +36,7 @@ export function useTrackedGames() {
   const [activeSession, setActiveSession] = useState<{
     gameId: string;
     startedAt: number;
+    category?: PlaytimeCategory;
   } | null>(null);
 
   useEffect(() => {
@@ -84,9 +92,9 @@ export function useTrackedGames() {
   }, []);
 
   const startSession = useCallback(
-    (gameId: string) => {
+    (gameId: string, category?: PlaytimeCategory) => {
       if (activeSession) return;
-      setActiveSession({ gameId, startedAt: Date.now() });
+      setActiveSession({ gameId, startedAt: Date.now(), category });
       setGames((prev) =>
         prev.map((g) => (g.id === gameId ? { ...g, status: "playing" } : g)),
       );
@@ -107,6 +115,8 @@ export function useTrackedGames() {
         endedAt,
         durationSeconds,
         note,
+        category: activeSession.category,
+        source: "timer",
       };
 
       setGames((prev) =>
@@ -126,18 +136,52 @@ export function useTrackedGames() {
   );
 
   const addManualSession = useCallback(
-    (gameId: string, durationSeconds: number, note?: string) => {
+    (
+      gameId: string,
+      durationSeconds: number,
+      note?: string,
+      category?: PlaytimeCategory,
+      source: SessionSource = "manual",
+    ) => {
       if (durationSeconds <= 0) return;
       const session: GameSession = {
         id: generateId(),
         startedAt: Date.now(),
         durationSeconds,
         note,
+        category,
+        source,
       };
       setGames((prev) =>
         prev.map((g) => {
           if (g.id !== gameId) return g;
           const sessions = [...g.sessions, session];
+          const totalTimeSeconds = sessions.reduce(
+            (sum, s) => sum + s.durationSeconds,
+            0,
+          );
+          return { ...g, sessions, totalTimeSeconds };
+        }),
+      );
+    },
+    [],
+  );
+
+  const importSessions = useCallback(
+    (gameId: string, imported: ImportedSession[], source: SessionSource) => {
+      if (imported.length === 0) return;
+      const newSessions: GameSession[] = imported.map((s) => ({
+        id: generateId(),
+        startedAt: s.date ? new Date(s.date).getTime() : Date.now(),
+        durationSeconds: Math.round(s.durationMinutes * 60),
+        note: s.note,
+        category: s.category,
+        source,
+      }));
+      setGames((prev) =>
+        prev.map((g) => {
+          if (g.id !== gameId) return g;
+          const sessions = [...g.sessions, ...newSessions];
           const totalTimeSeconds = sessions.reduce(
             (sum, s) => sum + s.durationSeconds,
             0,
@@ -172,6 +216,7 @@ export function useTrackedGames() {
     startSession,
     stopSession,
     addManualSession,
+    importSessions,
     deleteSession,
   };
 }
