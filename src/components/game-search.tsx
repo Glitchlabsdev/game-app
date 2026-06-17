@@ -20,28 +20,45 @@ export function GameSearch({ onAdd }: GameSearchProps) {
   const [results, setResults] = useState<IGDBGame[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
 
-  async function handleSearch(e: React.FormEvent) {
-    e.preventDefault();
-    if (!query.trim()) return;
-
+  async function runSearch(searchQuery: string, searchPage: number) {
     setLoading(true);
     setError(null);
     try {
       const res = await fetch(
-        `/api/igdb/search?q=${encodeURIComponent(query)}`,
+        `/api/igdb/search?q=${encodeURIComponent(searchQuery)}&page=${searchPage}`,
       );
-      const data = (await res.json()) as { games?: IGDBGame[]; error?: string };
+      const data = (await res.json()) as {
+        games?: IGDBGame[];
+        hasMore?: boolean;
+        error?: string;
+      };
       if (!res.ok) {
         throw new Error(data.error ?? "Search failed");
       }
       setResults(data.games ?? []);
+      setHasMore(data.hasMore ?? false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Search failed");
       setResults([]);
+      setHasMore(false);
     } finally {
       setLoading(false);
     }
+  }
+
+  async function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
+    if (!query.trim()) return;
+    setPage(1);
+    await runSearch(query, 1);
+  }
+
+  function goToPage(newPage: number) {
+    setPage(newPage);
+    runSearch(query, newPage);
   }
 
   return (
@@ -62,65 +79,91 @@ export function GameSearch({ onAdd }: GameSearchProps) {
       {error && <p className="text-sm text-destructive">{error}</p>}
 
       {results.length > 0 && (
-        <ul className="grid gap-3 sm:grid-cols-2">
-          {results.map((game) => (
-            <li
-              key={game.id}
-              className="flex items-center gap-3 rounded-xl border border-border bg-card p-3"
-            >
-              {game.cover?.image_id ? (
-                <Image
-                  src={getIGDBCoverUrl(game.cover.image_id, "cover_small")}
-                  alt={game.name}
-                  width={90}
-                  height={128}
-                  className="h-16 w-12 shrink-0 rounded-md object-cover"
-                />
-              ) : (
-                <div className="flex h-16 w-12 shrink-0 items-center justify-center rounded-md bg-muted text-xs text-muted-foreground">
-                  No cover
-                </div>
-              )}
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-medium">{game.name}</p>
-                {game.first_release_date && (
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(game.first_release_date * 1000).getFullYear()}
-                  </p>
+        <div className="space-y-3">
+          <ul className="grid gap-3 sm:grid-cols-2">
+            {results.map((game) => (
+              <li
+                key={game.id}
+                className="flex items-center gap-3 rounded-xl border border-border bg-card p-3"
+              >
+                {game.cover?.image_id ? (
+                  <Image
+                    src={getIGDBCoverUrl(game.cover.image_id, "cover_small")}
+                    alt={game.name}
+                    width={90}
+                    height={128}
+                    className="h-16 w-12 shrink-0 rounded-md object-cover"
+                  />
+                ) : (
+                  <div className="flex h-16 w-12 shrink-0 items-center justify-center rounded-md bg-muted text-xs text-muted-foreground">
+                    No cover
+                  </div>
                 )}
-              </div>
-              <div className="flex shrink-0 flex-col gap-1">
-                <Button
-                  size="sm"
-                  onClick={() =>
-                    onAdd({
-                      igdbId: game.id,
-                      name: game.name,
-                      coverImageId: game.cover?.image_id,
-                      status: "playing",
-                    })
-                  }
-                >
-                  Play
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() =>
-                    onAdd({
-                      igdbId: game.id,
-                      name: game.name,
-                      coverImageId: game.cover?.image_id,
-                      status: "backlog",
-                    })
-                  }
-                >
-                  Backlog
-                </Button>
-              </div>
-            </li>
-          ))}
-        </ul>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-medium">{game.name}</p>
+                  {game.first_release_date && (
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(game.first_release_date * 1000).getFullYear()}
+                    </p>
+                  )}
+                </div>
+                <div className="flex shrink-0 flex-col gap-1">
+                  <Button
+                    size="sm"
+                    onClick={() =>
+                      onAdd({
+                        igdbId: game.id,
+                        name: game.name,
+                        coverImageId: game.cover?.image_id,
+                        status: "playing",
+                      })
+                    }
+                  >
+                    Play
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() =>
+                      onAdd({
+                        igdbId: game.id,
+                        name: game.name,
+                        coverImageId: game.cover?.image_id,
+                        status: "backlog",
+                      })
+                    }
+                  >
+                    Backlog
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          {(page > 1 || hasMore) && (
+            <div className="flex items-center justify-between">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={page === 1 || loading}
+                onClick={() => goToPage(page - 1)}
+              >
+                Previous
+              </Button>
+              <span className="text-sm text-muted-foreground">Page {page}</span>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={!hasMore || loading}
+                onClick={() => goToPage(page + 1)}
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
