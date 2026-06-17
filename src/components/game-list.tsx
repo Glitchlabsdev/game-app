@@ -20,8 +20,17 @@ interface GameListProps {
   onStop: () => void;
   onRemove: (id: string) => void;
   onDeleteSession: (gameId: string, sessionId: string) => void;
-  onAddManualTime: (gameId: string, seconds: number, note?: string, category?: PlaytimeCategory) => void;
-  onImportSessions: (gameId: string, sessions: ImportedSession[], source: SessionSource) => void;
+  onAddManualTime: (
+    gameId: string,
+    seconds: number,
+    note?: string,
+    category?: PlaytimeCategory,
+  ) => void;
+  onImportSessions: (
+    gameId: string,
+    sessions: ImportedSession[],
+    source: SessionSource,
+  ) => void;
 }
 
 const tabs: { value: GameStatus | "all"; label: string }[] = [

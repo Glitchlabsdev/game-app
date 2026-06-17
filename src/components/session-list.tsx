@@ -3,10 +3,10 @@
 import { Button } from "@/components/ui/button";
 import {
   CATEGORY_LABELS,
-  SOURCE_LABELS,
   formatDuration,
   type GameSession,
   type PlaytimeCategory,
+  SOURCE_LABELS,
 } from "@/types/game";
 
 interface SessionListProps {
@@ -15,9 +15,12 @@ interface SessionListProps {
 }
 
 const categoryColors: Record<PlaytimeCategory, string> = {
-  main_story: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
-  main_extras: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
-  completionist: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300",
+  main_story:
+    "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
+  main_extras:
+    "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
+  completionist:
+    "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300",
   speedrun: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
   other: "bg-muted text-muted-foreground",
 };
@@ -27,14 +30,13 @@ export function SessionList({ sessions, onDelete }: SessionListProps) {
     return <p className="text-sm text-muted-foreground">No sessions yet.</p>;
   }
 
-  const categoryTotals = sessions.reduce<Partial<Record<PlaytimeCategory, number>>>(
-    (acc, s) => {
-      if (!s.category) return acc;
-      acc[s.category] = (acc[s.category] ?? 0) + s.durationSeconds;
-      return acc;
-    },
-    {},
-  );
+  const categoryTotals = sessions.reduce<
+    Partial<Record<PlaytimeCategory, number>>
+  >((acc, s) => {
+    if (!s.category) return acc;
+    acc[s.category] = (acc[s.category] ?? 0) + s.durationSeconds;
+    return acc;
+  }, {});
 
   const hasCategoryData = Object.keys(categoryTotals).length > 0;
 
@@ -72,11 +74,13 @@ export function SessionList({ sessions, onDelete }: SessionListProps) {
                   {CATEGORY_LABELS[session.category]}
                 </span>
               )}
-              {session.source && session.source !== "timer" && session.source !== "manual" && (
-                <span className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
-                  {SOURCE_LABELS[session.source]}
-                </span>
-              )}
+              {session.source &&
+                session.source !== "timer" &&
+                session.source !== "manual" && (
+                  <span className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
+                    {SOURCE_LABELS[session.source]}
+                  </span>
+                )}
               {session.note && (
                 <span className="text-muted-foreground">{session.note}</span>
               )}

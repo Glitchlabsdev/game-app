@@ -6,13 +6,13 @@ import { Button } from "@/components/ui/button";
 import { getIGDBCoverUrl } from "@/lib/igdb";
 import {
   CATEGORY_LABELS,
-  SOURCE_LABELS,
   formatDuration,
   formatShortDuration,
   type GameStatus,
   type ImportedSession,
   type PlaytimeCategory,
   type SessionSource,
+  SOURCE_LABELS,
   type TrackedGame,
 } from "@/types/game";
 import { SessionList } from "./session-list";
@@ -26,8 +26,15 @@ interface GameCardProps {
   onStop: () => void;
   onRemove: () => void;
   onDeleteSession: (sessionId: string) => void;
-  onAddManualTime: (seconds: number, note?: string, category?: PlaytimeCategory) => void;
-  onImportSessions: (sessions: ImportedSession[], source: SessionSource) => void;
+  onAddManualTime: (
+    seconds: number,
+    note?: string,
+    category?: PlaytimeCategory,
+  ) => void;
+  onImportSessions: (
+    sessions: ImportedSession[],
+    source: SessionSource,
+  ) => void;
 }
 
 const statusLabels: Record<GameStatus, string> = {
@@ -74,7 +81,8 @@ export function GameCard({
 
   const [manualMinutes, setManualMinutes] = useState("");
   const [manualNote, setManualNote] = useState("");
-  const [manualCategory, setManualCategory] = useState<PlaytimeCategory>("other");
+  const [manualCategory, setManualCategory] =
+    useState<PlaytimeCategory>("other");
 
   const [importPlatform, setImportPlatform] = useState<SessionSource>("steam");
   const [importJson, setImportJson] = useState("");
@@ -92,7 +100,9 @@ export function GameCard({
           throw new Error(`Item ${i} is not an object.`);
         const obj = item as Record<string, unknown>;
         if (typeof obj.durationMinutes !== "number" || obj.durationMinutes <= 0)
-          throw new Error(`Item ${i}: "durationMinutes" must be a positive number.`);
+          throw new Error(
+            `Item ${i}: "durationMinutes" must be a positive number.`,
+          );
         return {
           durationMinutes: obj.durationMinutes,
           category: obj.category as PlaytimeCategory | undefined,
@@ -102,7 +112,9 @@ export function GameCard({
       });
       onImportSessions(sessions, importPlatform);
       setImportJson("");
-      setImportSuccess(`Imported ${sessions.length} session${sessions.length !== 1 ? "s" : ""} from ${SOURCE_LABELS[importPlatform]}.`);
+      setImportSuccess(
+        `Imported ${sessions.length} session${sessions.length !== 1 ? "s" : ""} from ${SOURCE_LABELS[importPlatform]}.`,
+      );
     } catch (e) {
       setImportError(e instanceof Error ? e.message : "Invalid JSON.");
     }
@@ -311,16 +323,19 @@ export function GameCard({
                   Add Time
                 </Button>
               </div>
-              <SessionList sessions={game.sessions} onDelete={onDeleteSession} />
+              <SessionList
+                sessions={game.sessions}
+                onDelete={onDeleteSession}
+              />
             </div>
           )}
 
           {activeTab === "import" && (
             <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-medium text-muted-foreground">
+              <fieldset>
+                <legend className="block text-xs font-medium text-muted-foreground">
                   Platform
-                </label>
+                </legend>
                 <div className="mt-1 flex flex-wrap gap-1">
                   {importPlatforms.map((p) => (
                     <button
@@ -337,7 +352,7 @@ export function GameCard({
                     </button>
                   ))}
                 </div>
-              </div>
+              </fieldset>
 
               <div>
                 <label
@@ -359,9 +374,12 @@ export function GameCard({
                   className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-xs outline-none"
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Each entry needs <code className="rounded bg-muted px-1">durationMinutes</code>.
-                  Optional: <code className="rounded bg-muted px-1">category</code>,{" "}
-                  <code className="rounded bg-muted px-1">date</code> (YYYY-MM-DD),{" "}
+                  Each entry needs{" "}
+                  <code className="rounded bg-muted px-1">durationMinutes</code>
+                  . Optional:{" "}
+                  <code className="rounded bg-muted px-1">category</code>,{" "}
+                  <code className="rounded bg-muted px-1">date</code>{" "}
+                  (YYYY-MM-DD),{" "}
                   <code className="rounded bg-muted px-1">note</code>.
                 </p>
               </div>

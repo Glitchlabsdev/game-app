@@ -168,11 +168,7 @@ export function useTrackedGames() {
   );
 
   const importSessions = useCallback(
-    (
-      gameId: string,
-      imported: ImportedSession[],
-      source: SessionSource,
-    ) => {
+    (gameId: string, imported: ImportedSession[], source: SessionSource) => {
       if (imported.length === 0) return;
       const newSessions: GameSession[] = imported.map((s) => ({
         id: generateId(),

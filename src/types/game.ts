@@ -59,16 +59,6 @@ export interface TrackedGame {
   addedAt: number;
 }
 
-export interface IGDBGame {
-  id: number;
-  name: string;
-  cover?: { id: number; image_id: string };
-  first_release_date?: number;
-  summary?: string;
-  genres?: Array<{ id: number; name: string }>;
-  platforms?: Array<{ id: number; name: string }>;
-}
-
 export function formatDuration(totalSeconds: number): string {
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
