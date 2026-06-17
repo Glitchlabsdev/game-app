@@ -49,7 +49,7 @@ export async function getIGDBAccessToken(): Promise<string> {
     expiresAt: Date.now() + data.expires_in * 1000 - 60_000,
   };
 
-  return data.access_token;
+return data.access_token;
 }
 
 export async function igdbRequest(body: string): Promise<unknown[]> {
